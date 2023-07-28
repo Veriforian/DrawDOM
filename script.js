@@ -1,6 +1,9 @@
 // CACHE / OPTS
 let border = true;
 let boxes = [];
+let rows = 16;
+let columns = 16;
+let currColor = 'black';
 
 const clearGrid = () => {
   boxes.forEach((box) => {
@@ -10,8 +13,8 @@ const clearGrid = () => {
 };
 
 const onNewClick = () => {
-  let rows = parseInt(prompt('How many rows?'));
-  let columns = parseInt(prompt('How many columns?'));
+  rows = parseInt(prompt('How many rows?')) || false;
+  columns = parseInt(prompt('How many columns?')) || false;
 
   while (
     isNaN(rows) ||
@@ -42,6 +45,12 @@ const toggleBorder = () => {
   });
 };
 
+const changeColor = () => {
+  let color = document.querySelector('.color_wheel').value;
+
+  currColor = color;
+};
+
 const saveBoxes = () => {
   const key = prompt('Enter a name for your grid:');
 
@@ -53,6 +62,10 @@ const saveBoxes = () => {
 
   // Loop over boxes to save the background color
   let colors = [];
+
+  // Save row and column count to recreate grid
+  colors.push(rows);
+  colors.push(columns);
 
   boxes.forEach((box) => {
     colors.push(box.style.backgroundColor);
@@ -79,6 +92,14 @@ const loadBoxes = () => {
     return;
   }
 
+  // Set grid to the correct size
+  rows = data.shift();
+  columns = data.shift();
+
+  document.querySelector('.container').innerHTML = '';
+
+  createGrid(rows, columns);
+
   // Loop over boxes to load the background color
   boxes.forEach((box, i) => {
     box.style.backgroundColor = data[i];
@@ -94,13 +115,15 @@ const clearStorage = () => {
 };
 
 const onHover = (e) => {
-  e.target.style.backgroundColor = 'black';
+  e.preventDefault();
+
+  e.target.style.backgroundColor = `${currColor || 'black'}`;
 };
 
-const createGrid = (rows, columns) => {
-  let divs = rows * columns;
+const createGrid = (createRows, createColumns) => {
+  let divs = createRows * createColumns;
   let containerWidth = Math.floor(window.innerWidth * 0.4);
-  let boxWidth = Math.floor(containerWidth / columns);
+  let boxWidth = Math.floor(containerWidth / createColumns);
   let container = document.querySelector('.container');
 
   // reset cache
@@ -116,7 +139,8 @@ const createGrid = (rows, columns) => {
     temp.classList.add('box');
 
     // Add event listener
-    temp.addEventListener('mouseover', onHover);
+    temp.addEventListener('dragover', onHover);
+    temp.addEventListener('onmousedown', (e) => e.preventDefault());
 
     // Add to DOM
     container.appendChild(temp);
@@ -125,15 +149,16 @@ const createGrid = (rows, columns) => {
     boxes.push(temp);
   }
 
-  container.style = `width: ${boxWidth * columns}px;`;
+  container.style = `width: ${boxWidth * createColumns}px; `;
 };
 
 const init = () => {
-  createGrid(16, 16);
+  createGrid(rows, columns);
 
   document.querySelector('.change').addEventListener('click', onNewClick);
   document.querySelector('.clear').addEventListener('click', clearGrid);
   document.querySelector('.borders').addEventListener('click', toggleBorder);
+  document.querySelector('.color_wheel').addEventListener('input', changeColor);
   document.querySelector('.save').addEventListener('click', saveBoxes);
   document.querySelector('.load').addEventListener('click', loadBoxes);
   document
