@@ -4,6 +4,7 @@ let boxes = [];
 let rows = 16;
 let columns = 16;
 let currColor = 'black';
+let clicking = false;
 
 const clearGrid = () => {
   boxes.forEach((box) => {
@@ -117,7 +118,9 @@ const clearStorage = () => {
 const onHover = (e) => {
   e.preventDefault();
 
-  e.target.style.backgroundColor = `${currColor || 'black'}`;
+  if (clicking) {
+    e.target.style.backgroundColor = `${currColor || 'black'}`;
+  }
 };
 
 const createGrid = (createRows, createColumns) => {
@@ -139,8 +142,9 @@ const createGrid = (createRows, createColumns) => {
     temp.classList.add('box');
 
     // Add event listener
-    temp.addEventListener('dragover', onHover);
-    temp.addEventListener('onmousedown', (e) => e.preventDefault());
+    temp.addEventListener('mouseover', onHover);
+    temp.draggable = false;
+    temp.ondragstart = () => false;
 
     // Add to DOM
     container.appendChild(temp);
@@ -155,6 +159,12 @@ const createGrid = (createRows, createColumns) => {
 const init = () => {
   createGrid(rows, columns);
 
+  document.querySelector('.container').addEventListener('mousedown', () => {
+    clicking = true;
+  });
+  document.querySelector('.container').addEventListener('mouseup', () => {
+    clicking = false;
+  });
   document.querySelector('.change').addEventListener('click', onNewClick);
   document.querySelector('.clear').addEventListener('click', clearGrid);
   document.querySelector('.borders').addEventListener('click', toggleBorder);
